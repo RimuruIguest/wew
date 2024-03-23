@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JM THE GREAT</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('https://scontent.fceb5-1.fna.fbcdn.net/v/t1.15752-9/431637946_1136267480840276_8639668801366460672_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeHyqgXZjEFoDOZkAos_QNhgUp-_5qysm0FSn7_mrKybQVjzS8Ope9Gce7ZyiIDUyidSxcY3WmXyzwv4Hya3nV_Y&_nc_ohc=f24fIr-zfnkAX9tASkh&_nc_ht=scontent.fceb5-1.fna&oh=03_AdSHqMKTtDQrrMzpLs0M5fZlmG4RJswlEtTWggO1x4RKdg&oe=6625F366'); 
+            background-size: cover;
+            background-position: center;
+            color: orange; 
+        }
+        #chatContainer {
+            width: 80%;
+            margin: 50px auto;
+            background-color: rgba(0, 0, 0, 0.5); 
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #messageInput {
+            width: 70%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        #chatMessages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #chatMessages li {
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50; 
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049; 
+        }
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px;
+            border: none;
+            background-color: transparent;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        @keyframes deleteEffect {
+            0% { background-color: #162916; }
+            50% { background-color: rgb(190, 25, 25); }
+            100% { background-color: rgb(165, 76, 175); }
+        }
+        .delete-animation {
+            animation: deleteEffect 1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatContainer">
+        <button id="closeButton" onclick="toggleChat()">X</button> 
+        <input type="text" id="messageInput" placeholder="Type your message" onkeydown="if (event.keyCode === 13) sendMessage()">
+        <button onclick="sendMessage()">Send</button>
+        <ul id="chatMessages"></ul>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3000');
+
+        socket.on('message', (data) => {
+            const chatMessage = document.getElementById('chatMessages');
+            const li = document.createElement('li');
+            li.id = data.id; 
+            li.appendChild(document.createTextNode(data.message));
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'PAPAS';
+            deleteButton.onclick = function() {
+                deleteMessage(data.id); 
+            };
+            li.appendChild(deleteButton);
+            chatMessage.appendChild(li);
+        });
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            socket.emit('message', { id: Date.now(), message }); 
+            messageInput.value = '';
+        }
+
+        function deleteMessage(id) {
+            const messageElement = document.getElementById(id); 
+            if (messageElement) {
+                messageElement.classList.add('delete-animation'); 
+                setTimeout(() => {
+                    messageElement.remove(); 
+                }, 1000); 
+                socket.emit('deleteMessage', id); 
+            }
+        }
+
+        function toggleChat() {
+            const chatContainer = document.getElementById('chatContainer');
+            if (chatContainer) {
+                chatContainer.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
